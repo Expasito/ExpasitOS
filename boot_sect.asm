@@ -1,6 +1,6 @@
 
 ; resource: https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf
-; on pg 22
+; on top pg 27
 
 [org 0x7c00] ; going to write our code at 0x7c00 in memory
 bits 16      ; using 16 bits for size of register
@@ -46,6 +46,17 @@ mov  bx, msg2  ; same here, load msg2 to bx for printing
 call print
 
 call load_sector   ; still working on this part
+
+; testing divide
+
+mov dx, 0
+mov ax, 100
+mov cx, 5
+div cx
+
+mov bx, 12345  ; fails at this number for a reason
+call print_num
+
 
 
 
