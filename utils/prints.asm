@@ -99,6 +99,11 @@ print_num:
 
 	print_num_loop2:
 
+		; we will print the counter out
+		mov ah, 0xe
+		mov al, ' '
+		int 0x10
+
 
 
 		mov dx, 0  ; clear the dividend
@@ -115,6 +120,7 @@ print_num:
 
 		mov ax, dx  ; make ax itself again before fixing dx
 		pop dx ; put dx back into dx off the stack
+
 		mov bx, dx  ; make bx the remainder
 
 		pop dx ; load the counter back to dx
