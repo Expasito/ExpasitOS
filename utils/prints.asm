@@ -3,7 +3,7 @@
 ;     it will just hold several functions
 ;
 
-
+; bx holds the string name(no brackets)
 print:
 	pusha   ; move all registers to the stack
 
