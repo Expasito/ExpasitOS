@@ -59,7 +59,7 @@ print_num:
 		je print_num_exit_1  ; if the quotient is 0, we have the maximum
 		mov ax, 10
 		mul cx
-		mov cx, ax
+		mov cx, ax; multiply cx by 10
 		jmp print_num_loop_1 ; jump back up to check again
 
 
@@ -101,7 +101,9 @@ print_num:
 
 		; we will print the counter out
 		mov ah, 0xe
-		mov al, ' '
+		mov al, '_'
+		int 0x10
+		int 0x10
 		int 0x10
 
 
@@ -125,6 +127,11 @@ print_num:
 
 		pop dx ; load the counter back to dx
 
+		mov ah, 0xe
+		mov al, '0'
+		add al, dl
+		int 0x10
+
 		cmp dx, 0
 		je print_num_exit2  ; if the number is equal to 0, leave
 		dec dx
@@ -141,40 +148,12 @@ print_num:
 
 
 	print_num_exit2:
+		mov ah, 0xe
+		mov al, '0'
+		mov al, 'f'
+		int 0x10
 		
 
 	popa 
 	ret
 
-
-load_sector:
-	pusha
-	mov ah, 0x02
-	mov dl,0
-	mov ch,3
-	mov dh,1
-
-	mov cl, 4
-	mov al, 5
-
-	mov bx, 0xa000
-	mov es,bx
-	mov bx, 0x1234
-
-	int 0x13
-
-	jc disk_error
-
-	jmp load_sector_exit
-
-	
-
-	disk_error:
-	mov bx, err
-	call print
-
-	load_sector_exit:
-		popa
-		ret
-
-err: db "Failed to load disk",13,10,0
