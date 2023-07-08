@@ -6,56 +6,80 @@
 bits 16      ; using 16 bits for size of register
 
 
+; GDT starts here
+gdt_start:
+
+gdt_null: ; this is the null descriptor
+dd 0x0
+dd 0x0
+
+gdt_code: ; this is the code segment descriptor
+
+dw 0xffff   ; limit is bits 0-15
+dw 0x0      ; base is bits 0-15
+db 0x0      ; base is bits 16-23
+db 10011010b  ; first flags, type flags
+db 11001111b  ; 2nd flags, limit (bits 16-19)
+db 0x0      ; base 24-31
+
+gdt_data:
+
+dw 0xffff    ; limit bits 0-15
+dw 0x0       ; base bits 0-15
+db 0x0       ; base bits 16-23
+db 10010010b  ; first flags, type flags
+db 11001111b ; 2nd flags, limit bits 16-19
+db 0x0      ; base bits 24-31
+
+gdt_end:
+; used for finding the size of gdt by subtracting addresses
+
+
+; this is the descriptor about our gdt
+gdt_descriptor:
+dw gdt_end - gdt_start -1  ; is the end - start -1
+dw gdt_start               ; this is the start address
+
+
+
+; few constants to help
+CODE_SEG equ gdt_code - gdt_start
+DATA_SEG equ gdt_data - gdt_start
+
 
 section .text
 
 ; few things to do first
-mov bp, 0x8000  ; we need to give the stack some space so it does not delete bios related stuff
+mov bp, 0x9000  ; we need to give the stack some space so it does not delete bios related stuff
 mov sp, bp      ; and put sp at bp since we have nothing on our stack
                 ; Doing this will prevent crashes later if we overwrite the interupts table, ec
 
-; here is a quick stack test for fun
-; This will print 'TEST ' to the screen
-push ' '
-push 'T'
-push 'S'
-push 'E'
-push 'T'
+cli   ; disables interrupts
+lgdt [gdt_descriptor]  ; load gdt register with start addresss of the gdt
 
-; we will loop 5 times
-mov bx, 0   ; bx will be our counter
-mov ah, 0xe ; we will print to screen
-printing:
-    cmp bx, 5  ; see if bx is equal to 5
-    je stop
-    inc bx     ; increment bx by one
-    pop ax
-    mov ah, 0xe ; we will print to screen, also reset because of pop
-    int 0x10
-    jmp printing ; jump back to top of loop
-  
+mov eax, cr0
+or al, 1       ; setting the first bit to 1
+mov cr0, eax   ; set cr0 back to itself
 
-stop:
-    ; just continue with program
+jmp 08h:PModeMain
 
 
+PModeMain:
+[bits 32]
 
-mov  bx, msg   ; load msg to bx which is the location for a print string function
-call print     ; call the print function
-mov  bx, msg2  ; same here, load msg2 to bx for printing
-call print
+mov ax, DATA_SEG
+mov ds, ax
+mov ss, ax
+mov es, ax
+mov fs, ax
+mov gs, ax
 
-call load_sector   ; still working on this part
+mov ebp, 0x90000
+mov esp,ebp
 
-; testing divide
 
-mov dx, 0
-mov ax, 100
-mov cx, 5
-div cx
 
-mov bx, 12345  ; fails at this number for a reason
-call print_num
+mov eax, 100 ; test eax
 
 
 
@@ -64,6 +88,7 @@ jmp $
 
 ; include our other file we wrote
 %include "utils/prints.asm"
+%include "utils/load_disk.asm"
 
 
 ; this holds our data for strings to print
