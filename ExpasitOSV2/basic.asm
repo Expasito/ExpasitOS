@@ -43,6 +43,9 @@ mov bx, MSG_EXIT
 call print
 
 
+mov ah, 0xe
+mov al, 'A'
+int 0x10
 ;mov al, 13
 ;int 0x10
 
