@@ -16,12 +16,17 @@ mov al, 10
 int 0x10
 
 
-mov bx, 8
+mov bl, 90
 call getDigits
+
+mov ah, 0xe
+mov al, ' '
+int 0x10
+int 0x10
+int 0x10
 
 mov al, cl
 add al, '0'
-mov ah, 0xe
 int 0x10
 
 
